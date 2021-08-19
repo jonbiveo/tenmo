@@ -1,6 +1,6 @@
 package com.techelevator.tenmo.model;
 
-public class Balance {
+public class Account {
 
 
 }
