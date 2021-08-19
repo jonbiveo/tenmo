@@ -94,8 +94,4 @@ public class Transfer {
     public void setUserTo(String userTo) {
         this.userTo = userTo;
     }
-
-    //connecting to TransferStatus model class, but above variable is transferStatusId as an int rather than a String
-    //public boolean isPending() {return TransferStatus.PENDING.equals(this.transferStatus);}
-
 }
