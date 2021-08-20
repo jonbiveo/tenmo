@@ -2,11 +2,14 @@ package com.techelevator.tenmo.services;
 
 import com.techelevator.tenmo.model.AuthenticatedUser;
 import com.techelevator.tenmo.model.Transfer;
+import com.techelevator.tenmo.model.User;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class TransferService {
@@ -69,6 +72,60 @@ public class TransferService {
             System.out.println("Oh no! All the TEnmo gnomes took your money!");
         }
         return result;
+    }
+
+    public void sendBucks() {
+        listUsersForTransfer();
+        enterUserIDAndAmount();
+    }
+
+    public void listUsersForTransfer() {
+        User[] users = null;
+        try {
+            users = restTemplate.exchange(BASE_URL + "listusers", HttpMethod.GET, makeAuthEntity(), User[].class).getBody();
+            System.out.println("-------------------------------------------\n" +
+                    "Users\n" +
+                    "ID\t\tName\n" +
+                    "-------------------------------------------");
+            for (User user : users) {
+                if (user.getId() != currentUser.getUser().getId()) {
+                    System.out.println(user.getId() + "\t\t" + user.getUsername());
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Bad input.");
+        }
+    }
+
+    public void enterUserIDAndAmount() {
+        try {
+            Scanner scanner = new Scanner(System.in);
+            Transfer transfer = new Transfer();
+            System.out.println("-------------------------------------------" +
+                    "Enter ID of user you are sending to (0 to cancel): ");
+            transfer.setAccountTo(Integer.parseInt(scanner.nextLine()));
+            transfer.setAccountFrom(currentUser.getUser().getId());
+            if (transfer.getAccountTo() != 0) {
+                System.out.println("Enter amount: ");
+                try {
+                    transfer.setAmount(new BigDecimal(Double.parseDouble(scanner.nextLine())));
+                } catch (NumberFormatException e) {
+                    System.out.println("Error when entering amount");
+                }
+                String output = restTemplate.exchange(BASE_URL + "transfer", HttpMethod.POST, makeTransferEntity(transfer), String.class).getBody();
+                System.out.println(output);
+            }
+        } catch (Exception e) {
+            System.out.println("Bad input");
+        }
+    }
+
+    private HttpEntity<Transfer> makeTransferEntity(Transfer transfer) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(currentUser.getToken());
+        HttpEntity<Transfer> entity = new HttpEntity<>(transfer, headers);
+        return entity;
     }
 
 

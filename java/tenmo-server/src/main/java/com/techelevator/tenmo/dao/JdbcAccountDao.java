@@ -17,12 +17,15 @@ import java.math.BigDecimal;
         @Autowired
         private JdbcTemplate jdbcTemplate;
 
-        public JdbcAccountDao() {}
+        public JdbcAccountDao() {
+        }
 
-        public JdbcAccountDao(JdbcTemplate jdbcTemplate) {this.jdbcTemplate = jdbcTemplate;}
+        public JdbcAccountDao(JdbcTemplate jdbcTemplate) {
+            this.jdbcTemplate = jdbcTemplate;
+        }
 
         @Override
-        public BigDecimal getBalance (int userId) {
+        public BigDecimal getBalance(int userId) {
             String sql = "SELECT balance FROM accounts where user_id = ?";
             SqlRowSet results = null;
             BigDecimal balance = null;
@@ -36,6 +39,31 @@ import java.math.BigDecimal;
                 System.out.println("Error accessing data.");
             }
             return balance;
+        }
+
+        @Override
+        public BigDecimal addToBalance(BigDecimal amountToAdd, int id) {
+            Account account = findAccountById(id);
+            BigDecimal newBalance = account.getBalance().add(amountToAdd);
+            System.out.println(newBalance);
+            String sql = "UPDATE account SET balance = ? WHERE user_id = ?;";
+            try {
+                jdbcTemplate.update(sql, newBalance, id);
+            } catch (DataAccessException e) {
+                System.out.println("Error accessing data");;
+            }
+            return account.getBalance();
+        }
+
+
+        public Account findAccountById(int id) {
+            Account account = null;
+            String sql = "SELECT * FROM accounts WHERE account_id = ?;";
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+            if (results.next()) {
+                account = mapToRowAccount(results);
+            }
+            return account;
         }
 
         private Account mapToRowAccount(SqlRowSet result) {
