@@ -109,11 +109,6 @@ public class TransferService {
             transfer.setAccountTo(Integer.parseInt(scanner.nextLine()) + 1000);
             transfer.setAccountFrom(currentUser.getUser().getId() + 1000);
 
-            HttpHeaders header = new HttpHeaders();
-            header.setBearerAuth(currentUser.getToken());
-
-            HttpEntity<Transfer> entity2 = new HttpEntity<>(transfer, header);
-
             if (transfer.getAccountTo() != 0) {
                 System.out.println("Enter amount: ");
                 try {
@@ -122,7 +117,7 @@ public class TransferService {
                     System.out.println("Error when entering amount.");
                 }
                 Transfer transfer1 = restTemplate.exchange(BASE_URL + "transfer", HttpMethod.POST, makeTransferEntity(transfer), Transfer.class).getBody();
-                System.out.println("It worked");
+                System.out.println("Transfer Successful!!");
             }
         } catch (RestClientResponseException ex) {
             System.out.println(ex.getRawStatusCode() + " : " + ex.getResponseBodyAsString());
