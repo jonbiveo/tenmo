@@ -4,10 +4,13 @@ import com.techelevator.tenmo.model.Transfer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class JdbcTransferDao implements TransferDao {
 
     @Autowired
@@ -42,7 +45,7 @@ public class JdbcTransferDao implements TransferDao {
                 "JOIN users user2 ON b.user_id = user2.user_id " +
                 "JOIN transfer_statuses ts ON t.transfer_status_id = ts.transfer_status_id " +
                 "JOIN transfer_types tt ON t.transfer_type_id = tt.transfer_type_id " +
-                "WHERE t.transfer_id = ?";
+                "WHERE t.transfer_id = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, transactionId);
         if (results.next()) {
             transfer = mapRowToTransfer(results);
@@ -51,6 +54,39 @@ public class JdbcTransferDao implements TransferDao {
         }
         return transfer;
     }
+
+    @Override
+    public String sendTransfer(int userFrom, int userTo, BigDecimal amount) {
+        if (userFrom == userTo) {
+            return "You can not pocket your own money; it's already in your pocket!";
+        }
+        if (amount.compareTo(accountDao.getBalance(userFrom)) == -1 && amount.compareTo(new BigDecimal(0)) == 1) {
+            String sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
+                    "VALUES (2, 2, ?, ?, ?);";
+            jdbcTemplate.update(sql, userFrom, userTo, amount);
+            accountDao.addToBalance(amount, userTo);
+            accountDao.subtractFromBalance(amount, userFrom);
+            return "Your transfer is complete.";
+        } else {
+            return "Failed transfer. Lack of funds, transfer amount less than or equal to zero, or invalid user.";
+        }
+    }
+
+//    @Override
+//    public String requestTransfer(int userFrom, int userTo, BigDecimal amount) {
+//        if (userFrom == userTo) {
+//            return "You can not pocket your own money; it's already in your pocket!";
+//        }
+//        if (amount.compareTo(new BigDecimal(0)) == 1) {
+//            String sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
+//                    "VALUES (1, 1, ?, ?, ?);";
+//            jdbcTemplate.update(sql, userFrom, userTo, amount);
+//            return "Your transfer request has been sent.";
+//        } else {
+//            return "Request not sent. There was a issue sending your request.";
+//        }
+//    }
+
 
     private Transfer mapRowToTransfer(SqlRowSet results) {
         Transfer transfer = new Transfer();

@@ -50,12 +50,38 @@ import java.math.BigDecimal;
             try {
                 jdbcTemplate.update(sql, newBalance, id);
             } catch (DataAccessException e) {
-                System.out.println("Error accessing data");;
+                System.out.println("Error accessing data");
             }
             return account.getBalance();
         }
 
+        @Override
+        public BigDecimal subtractFromBalance(BigDecimal amountToSubtract, int id) {
+            Account account = findAccountById(id);
+            BigDecimal newBalance = account.getBalance().subtract(amountToSubtract);
+            String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
+            try {
+                jdbcTemplate.update(sql, newBalance, id);
+            } catch (DataAccessException e) {
+                System.out.println("Error accessing data.");
+            }
+            return account.getBalance();
+        }
 
+        @Override
+        public Account findUserById(int userId) {
+            String sql = "SELECT * FROM accounts WHERE user_id = ?;";
+            Account account = null;
+            try {
+                SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
+                account = mapToRowAccount(result);
+            } catch (DataAccessException e) {
+                System.out.println("Error accessing data.");
+            }
+            return account;
+        }
+
+        @Override
         public Account findAccountById(int id) {
             Account account = null;
             String sql = "SELECT * FROM accounts WHERE account_id = ?;";

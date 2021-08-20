@@ -71,7 +71,6 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewCurrentBalance() {
-		// TODO Auto-generated method stub
 		TenmoService tenmoService = new TenmoService(API_BASE_URL, currentUser);
 		try {
 			tenmoService.getBalance();
@@ -84,7 +83,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		TransferService transferService = new TransferService(API_BASE_URL, currentUser);
 		transferService.transferList();
 	}
-
+	//optional
 	private void viewPendingRequests() {
 		// TODO Auto-generated method stub
 		
@@ -94,7 +93,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		TransferService transferService = new TransferService(API_BASE_URL, currentUser);
 		transferService.sendBucks();
 	}
-
+	//optional
 	private void requestBucks() {
 		// TODO Auto-generated method stub
 		

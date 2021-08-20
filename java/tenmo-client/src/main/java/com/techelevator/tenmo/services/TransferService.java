@@ -85,7 +85,7 @@ public class TransferService {
             users = restTemplate.exchange(BASE_URL + "listusers", HttpMethod.GET, makeAuthEntity(), User[].class).getBody();
             System.out.println("-------------------------------------------\n" +
                     "Users\n" +
-                    "ID\t\tName\n" +
+                    "ID\t\t\tName\n" +
                     "-------------------------------------------");
             for (User user : users) {
                 if (user.getId() != currentUser.getUser().getId()) {
@@ -101,7 +101,7 @@ public class TransferService {
         try {
             Scanner scanner = new Scanner(System.in);
             Transfer transfer = new Transfer();
-            System.out.println("-------------------------------------------" +
+            System.out.println("-------------------------------------------\n" +
                     "Enter ID of user you are sending to (0 to cancel): ");
             transfer.setAccountTo(Integer.parseInt(scanner.nextLine()));
             transfer.setAccountFrom(currentUser.getUser().getId());
@@ -110,7 +110,7 @@ public class TransferService {
                 try {
                     transfer.setAmount(new BigDecimal(Double.parseDouble(scanner.nextLine())));
                 } catch (NumberFormatException e) {
-                    System.out.println("Error when entering amount");
+                    System.out.println("Error when entering amount.");
                 }
                 String output = restTemplate.exchange(BASE_URL + "transfer", HttpMethod.POST, makeTransferEntity(transfer), String.class).getBody();
                 System.out.println(output);
@@ -127,7 +127,6 @@ public class TransferService {
         HttpEntity<Transfer> entity = new HttpEntity<>(transfer, headers);
         return entity;
     }
-
 
     private HttpEntity makeAuthEntity() {
         HttpHeaders headers = new HttpHeaders();
