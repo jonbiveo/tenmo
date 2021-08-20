@@ -7,6 +7,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -103,8 +106,14 @@ public class TransferService {
             Transfer transfer = new Transfer();
             System.out.println("-------------------------------------------\n" +
                     "Enter ID of user you are sending to (0 to cancel): ");
-            transfer.setAccountTo(Integer.parseInt(scanner.nextLine()));
-            transfer.setAccountFrom(currentUser.getUser().getId());
+            transfer.setAccountTo(Integer.parseInt(scanner.nextLine()) + 1000);
+            transfer.setAccountFrom(currentUser.getUser().getId() + 1000);
+
+            HttpHeaders header = new HttpHeaders();
+            header.setBearerAuth(currentUser.getToken());
+
+            HttpEntity<Transfer> entity2 = new HttpEntity<>(transfer, header);
+
             if (transfer.getAccountTo() != 0) {
                 System.out.println("Enter amount: ");
                 try {
@@ -112,10 +121,12 @@ public class TransferService {
                 } catch (NumberFormatException e) {
                     System.out.println("Error when entering amount.");
                 }
-                String output = restTemplate.exchange(BASE_URL + "transfer", HttpMethod.POST, makeTransferEntity(transfer), String.class).getBody();
-                System.out.println(output);
+                Transfer transfer1 = restTemplate.exchange(BASE_URL + "transfer", HttpMethod.POST, makeTransferEntity(transfer), Transfer.class).getBody();
+                System.out.println("It worked");
             }
-        } catch (Exception e) {
+        } catch (RestClientResponseException ex) {
+            System.out.println(ex.getRawStatusCode() + " : " + ex.getResponseBodyAsString());
+        } catch (RestClientException e) {
             System.out.println("Bad input");
         }
     }

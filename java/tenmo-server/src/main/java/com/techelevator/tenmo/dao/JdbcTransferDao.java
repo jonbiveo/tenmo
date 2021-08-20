@@ -18,6 +18,8 @@ public class JdbcTransferDao implements TransferDao {
     @Autowired
     private AccountDao accountDao;
 
+    public JdbcTransferDao(JdbcTemplate jdbcTemplate) { this.jdbcTemplate = jdbcTemplate;}
+
     @Override
     public List<Transfer> getAllTransfers(int userId) {
         List<Transfer> transferList = new ArrayList<>();
@@ -27,7 +29,7 @@ public class JdbcTransferDao implements TransferDao {
                 "JOIN users user1 ON a.user_id = user1.user_id " +
                 "JOIN users user2 ON a.user_id = user2.user_id " +
                 "WHERE a.user_id = ? OR b.user_id = ?;";
-        SqlRowSet results =jdbcTemplate.queryForRowSet(sql, userId, userId);
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId, userId);
         while (results.next()) {
             Transfer transfer = mapRowToTransfer(results);
             transferList.add(transfer);
@@ -55,22 +57,39 @@ public class JdbcTransferDao implements TransferDao {
         return transfer;
     }
 
+
     @Override
-    public String sendTransfer(int userFrom, int userTo, BigDecimal amount) {
-        if (userFrom == userTo) {
-            return "You can not pocket your own money; it's already in your pocket!";
+    public Transfer sendTransfer(int from, int to, BigDecimal amount) {
+        String sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) VALUES (2, 2, ?, ?, ?)";
+        jdbcTemplate.update(sql, from, to, amount);
+        String sql2 = "SELECT transfer_id FROM transfers ORDER BY transfer_id DESC LIMIT 1";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql2);
+        int id = 0;
+        while(result.next()) {
+            id = result.getInt("transfer_id");
         }
-        if (amount.compareTo(accountDao.getBalance(userFrom)) == -1 && amount.compareTo(new BigDecimal(0)) == 1) {
-            String sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
-                    "VALUES (2, 2, ?, ?, ?);";
-            jdbcTemplate.update(sql, userFrom, userTo, amount);
-            accountDao.addToBalance(amount, userTo);
-            accountDao.subtractFromBalance(amount, userFrom);
-            return "Your transfer is complete.";
-        } else {
-            return "Failed transfer. Lack of funds, transfer amount less than or equal to zero, or invalid user.";
-        }
+        Transfer transfer = new Transfer(from, to, amount);
+        return transfer;
     }
+
+
+//    @Override
+//    public String sendTransfer(int accountFrom, int accountTo, BigDecimal amount) {
+//        accountFrom =
+//        if (accountFrom == accountTo) {
+//            return "You can not pocket your own money; it's already in your pocket!";
+//        }
+//        if (amount.compareTo(accountDao.getBalance(accountFrom)) == -1 && amount.compareTo(new BigDecimal(0)) == 1) {
+//            String sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
+//                    "VALUES (2, 2, ?, ?, ?);";
+//            jdbcTemplate.update(sql, accountFrom, accountTo, amount);
+//            accountDao.addToBalance(amount, accountTo);
+//            accountDao.subtractFromBalance(amount, accountFrom);
+//            return "Your transfer is complete.";
+//        } else {
+//            return "Failed transfer. Lack of funds, transfer amount less than or equal to zero, or invalid user.";
+//        }
+//    }
 
 //    @Override
 //    public String requestTransfer(int userFrom, int userTo, BigDecimal amount) {

@@ -5,19 +5,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 
-    @Service
+    @Component
     public class JdbcAccountDao implements AccountDao {
 
         @Autowired
         private JdbcTemplate jdbcTemplate;
 
-        public JdbcAccountDao() {
-        }
+        public JdbcAccountDao() {}
 
         public JdbcAccountDao(JdbcTemplate jdbcTemplate) {
             this.jdbcTemplate = jdbcTemplate;
