@@ -34,7 +34,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
     	app.run();
     }
 
-    public App(ConsoleService console, AuthenticationService authenticationService) {
+	public App(ConsoleService console, AuthenticationService authenticationService) {
 		this.console = console;
 		this.authenticationService = authenticationService;
 	}
@@ -48,7 +48,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		mainMenu();
 	}
 
-	private void mainMenu() {
+	public void mainMenu() {
 		while(true) {
 			String choice = (String)console.getChoiceFromOptions(MAIN_MENU_OPTIONS);
 			if(MAIN_MENU_OPTION_VIEW_BALANCE.equals(choice)) {

@@ -8,39 +8,38 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 
 @Component
-    public class JdbcAccountDao implements AccountDao {
+public class JdbcAccountDao implements AccountDao {
 
-        @Autowired
-        private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-        public JdbcAccountDao() {}
+    public JdbcAccountDao() {}
 
-        public JdbcAccountDao(JdbcTemplate jdbcTemplate) {
-            this.jdbcTemplate = jdbcTemplate;
-        }
+    public JdbcAccountDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
-        @Override
-        public BigDecimal getBalance(int userId) {
-            String sql = "SELECT balance FROM accounts where user_id = ?";
-            SqlRowSet results = null;
-            BigDecimal balance = null;
+    @Override
+    public BigDecimal getBalance(int userId) {
+        String sql = "SELECT balance FROM accounts where user_id = ?";
+        SqlRowSet results = null;
+        BigDecimal balance = null;
 
-            try {
-                results = jdbcTemplate.queryForRowSet(sql, userId);
-                if (results.next()) {
-                    balance = results.getBigDecimal("balance");
-                }
-            } catch (DataAccessException e) {
-                System.out.println("Error accessing data.");
+        try {
+            results = jdbcTemplate.queryForRowSet(sql, userId);
+            if (results.next()) {
+                balance = results.getBigDecimal("balance");
             }
-            return balance;
+        } catch (DataAccessException e) {
+            System.out.println("Error accessing data.");
         }
+        return balance;
+    }
 
     @Override
     public void transferFunds(Transfer transfer) {
@@ -63,12 +62,11 @@ import java.math.RoundingMode;
         fromBalance = fromBalance.subtract(transferAmount);
         toBalance = toBalance.add(transferAmount);
 
-        //converting SQL int value to BigDecimal for correct money math
-
         double fromBalanceD = fromBalance.doubleValue();
         double toBalanceD = toBalance.doubleValue();
 
-        //Converting BigDecimal back to double for SQL.
+        System.out.println(fromBalanceD);
+        System.out.println(toBalanceD);
 
         String sqlTransferFrom = "UPDATE accounts SET balance = ?  WHERE account_id = ?";
         jdbcTemplate.update(sqlTransferFrom, fromBalanceD, transfer.getAccountFrom());
@@ -78,63 +76,35 @@ import java.math.RoundingMode;
 
     }
 
-
-//        @Override
-//        public BigDecimal addToBalance(BigDecimal amountToAdd, int id) {
-//            Account account = findAccountById(id);
-//            BigDecimal newBalance = account.getBalance().add(amountToAdd);
-//            System.out.println(newBalance);
-//            String sql = "UPDATE account SET balance = ? WHERE user_id = ?;";
-//            try {
-//                jdbcTemplate.update(sql, newBalance, id);
-//            } catch (DataAccessException e) {
-//                System.out.println("Error accessing data");
-//            }
-//            return account.getBalance();
-//        }
-//
-//        @Override
-//        public BigDecimal subtractFromBalance(BigDecimal amountToSubtract, int id) {
-//            Account account = findAccountById(id);
-//            BigDecimal newBalance = account.getBalance().subtract(amountToSubtract);
-//            String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
-//            try {
-//                jdbcTemplate.update(sql, newBalance, id);
-//            } catch (DataAccessException e) {
-//                System.out.println("Error accessing data.");
-//            }
-//            return account.getBalance();
-//        }
-
-        @Override
-        public Account findUserById(int userId) {
-            String sql = "SELECT * FROM accounts WHERE user_id = ?;";
-            Account account = null;
-            try {
-                SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
-                account = mapToRowAccount(result);
-            } catch (DataAccessException e) {
-                System.out.println("Error accessing data.");
-            }
-            return account;
+    @Override
+    public Account findUserById(int userId) {
+        String sql = "SELECT * FROM accounts WHERE user_id = ?;";
+        Account account = null;
+        try {
+            SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
+            account = mapToRowAccount(result);
+        } catch (DataAccessException e) {
+            System.out.println("Error accessing data.");
         }
-
-        @Override
-        public Account findAccountById(int id) {
-            Account account = null;
-            String sql = "SELECT * FROM accounts WHERE account_id = ?;";
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
-            if (results.next()) {
-                account = mapToRowAccount(results);
-            }
-            return account;
-        }
-
-        private Account mapToRowAccount(SqlRowSet result) {
-            Account account = new Account();
-            account.setBalance(result.getBigDecimal("balance"));
-            account.setAccountId(result.getInt("account_id"));
-            account.setUserId(result.getInt("user_id"));
-            return account;
-        }
+        return account;
     }
+
+    @Override
+    public Account findAccountById(int id) {
+        Account account = null;
+        String sql = "SELECT * FROM accounts WHERE account_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+        if (results.next()) {
+            account = mapToRowAccount(results);
+        }
+        return account;
+    }
+
+    private Account mapToRowAccount(SqlRowSet result) {
+        Account account = new Account();
+        account.setBalance(result.getBigDecimal("balance"));
+        account.setAccountId(result.getInt("account_id"));
+        account.setUserId(result.getInt("user_id"));
+        return account;
+    }
+}

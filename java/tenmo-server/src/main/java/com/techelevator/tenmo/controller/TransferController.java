@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import java.util.List;
 
 @RestController
@@ -19,7 +18,6 @@ public class TransferController {
 
     @Autowired
     private TransferDao transferDao;
-
 
     @RequestMapping(path = "account/transfers/{id}", method = RequestMethod.GET)
     public List<Transfer> getAllTransfersById(@PathVariable int id) {

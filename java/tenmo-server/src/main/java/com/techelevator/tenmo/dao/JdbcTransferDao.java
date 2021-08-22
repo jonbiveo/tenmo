@@ -62,14 +62,6 @@ public class JdbcTransferDao implements TransferDao {
     public Transfer sendTransfer(int from, int to, BigDecimal amount) {
         String sql = "INSERT INTO transfers (transfer_type_id, transfer_status_id, account_from, account_to, amount) VALUES (2, 2, ?, ?, ?)";
         jdbcTemplate.update(sql, from, to, amount);
-        //accountDao.addToBalance(amount, to);
-        //accountDao.subtractFromBalance(amount, from);
-        String sql2 = "SELECT transfer_id FROM transfers ORDER BY transfer_id DESC LIMIT 1";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql2);
-        int id = 0;
-        while(result.next()) {
-            id = result.getInt("transfer_id");
-        }
         Transfer transfer = new Transfer(from, to, amount);
         return transfer;
     }

@@ -1,5 +1,7 @@
 package com.techelevator.tenmo.services;
 
+
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.AuthenticatedUser;
 import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.User;
@@ -7,7 +9,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -20,6 +21,8 @@ public class TransferService {
     private String BASE_URL;
     private RestTemplate restTemplate = new RestTemplate();
     private AuthenticatedUser currentUser;
+    private Account accountTo;
+    private Account accountFrom;
 
     public TransferService(String url, AuthenticatedUser currentUser) {
         this.BASE_URL = url;
@@ -79,7 +82,6 @@ public class TransferService {
 
     public void sendBucks() {
         listUsersForTransfer();
-        enterUserIDAndAmount();
     }
 
     public void listUsersForTransfer() {
@@ -98,26 +100,37 @@ public class TransferService {
         } catch (Exception e) {
             System.out.println("Bad input.");
         }
-    }
-
-    public void enterUserIDAndAmount() {
         try {
             Scanner scanner = new Scanner(System.in);
             Transfer transfer = new Transfer();
             System.out.println("-------------------------------------------\n" +
                     "Enter ID of user you are sending to (0 to cancel): ");
-            transfer.setAccountTo(Integer.parseInt(scanner.nextLine()) + 1000);
-            transfer.setAccountFrom(currentUser.getUser().getId() + 1000);
 
-            if (transfer.getAccountTo() != 0) {
-                System.out.println("Enter amount: ");
-                try {
-                    transfer.setAmount(new BigDecimal(Double.parseDouble(scanner.nextLine())));
-                } catch (NumberFormatException e) {
-                    System.out.println("Error when entering amount.");
+            int accountFromInt = scanner.nextInt();
+
+            accountTo = restTemplate.exchange(BASE_URL + "user/" + accountFromInt + "/account", HttpMethod.GET, makeAuthEntity(), Account.class).getBody();
+            accountFrom = restTemplate.exchange(BASE_URL + "user/" + currentUser.getUser().getId() + "/account", HttpMethod.GET, makeAuthEntity(), Account.class).getBody();
+
+            if (accountFromInt != 0) {
+                transfer.setAccountTo(accountTo.getAccountId());
+                transfer.setAccountFrom(accountFrom.getAccountId());
+            }
+            if (transfer.getAccountFrom() == transfer.getAccountTo()) {
+                System.out.println("You can't send money to yourself!");
+            }
+            if (transfer.getAccountFrom() != transfer.getAccountTo()) {
+                if (transfer.getAccountTo() != 0) {
+                    System.out.println("Enter amount: ");
+                    try {
+                        double amountD = scanner.nextDouble();
+                        transfer.setAmount(new BigDecimal(amountD));
+                    } catch (NumberFormatException e) {
+                        System.out.println("Error when entering amount.");
+                    }
+                    restTemplate.exchange(BASE_URL + "transfer", HttpMethod.POST, makeTransferEntity(transfer), Transfer.class).getBody();
+                    restTemplate.exchange(BASE_URL + "newtransfer/approved", HttpMethod.PUT, makeTransferEntity(transfer), Transfer.class).getBody();
+                    System.out.println("Transfer Successful!!");
                 }
-                Transfer transfer1 = restTemplate.exchange(BASE_URL + "transfer", HttpMethod.POST, makeTransferEntity(transfer), Transfer.class).getBody();
-                System.out.println("Transfer Successful!!");
             }
         } catch (RestClientResponseException ex) {
             System.out.println(ex.getRawStatusCode() + " : " + ex.getResponseBodyAsString());

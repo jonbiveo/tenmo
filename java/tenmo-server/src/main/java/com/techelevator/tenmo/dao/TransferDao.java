@@ -9,8 +9,8 @@ import java.util.List;
 @Component
 public interface TransferDao {
 
-    public List<Transfer> getAllTransfers(int userId);
-    public Transfer getTransferById(int transactionId);
-    public Transfer sendTransfer(int userFrom, int UserTo, BigDecimal amount);
+    List<Transfer> getAllTransfers(int userId);
+    Transfer getTransferById(int transactionId);
+    Transfer sendTransfer(int userFrom, int UserTo, BigDecimal amount);
 
 }
