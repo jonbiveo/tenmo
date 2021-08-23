@@ -81,10 +81,6 @@ public class TransferService {
     }
 
     public void sendBucks() {
-        listUsersForTransfer();
-    }
-
-    public void listUsersForTransfer() {
         User[] users = null;
         try {
             users = restTemplate.exchange(BASE_URL + "listusers", HttpMethod.GET, makeAuthEntity(), User[].class).getBody();
@@ -111,11 +107,14 @@ public class TransferService {
             accountTo = restTemplate.exchange(BASE_URL + "user/" + accountFromInt + "/account", HttpMethod.GET, makeAuthEntity(), Account.class).getBody();
             accountFrom = restTemplate.exchange(BASE_URL + "user/" + currentUser.getUser().getId() + "/account", HttpMethod.GET, makeAuthEntity(), Account.class).getBody();
 
+            if (accountFromInt == 0) {
+                System.out.println("Cancelled.");
+            }
             if (accountFromInt != 0) {
                 transfer.setAccountTo(accountTo.getAccountId());
                 transfer.setAccountFrom(accountFrom.getAccountId());
             }
-            if (transfer.getAccountFrom() == transfer.getAccountTo()) {
+            if (accountFromInt != 0 && (transfer.getAccountFrom() == transfer.getAccountTo())) {
                 System.out.println("You can't send money to yourself!");
             }
             if (transfer.getAccountFrom() != transfer.getAccountTo()) {
