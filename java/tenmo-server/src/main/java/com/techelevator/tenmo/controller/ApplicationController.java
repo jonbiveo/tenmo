@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -40,8 +41,17 @@ public class ApplicationController {
         return users;
     }
 
+//    @RequestMapping(path = "/accounts/byUser", method = RequestMethod.GET)
+//    public Account getAccountByUser(Principal principal) {
+//        int id = userDao.findIdByUsername(principal.getName());
+//        return accountDao.findUserById(id);
+//    }
+
     @RequestMapping(path = "user/{id}/account", method = RequestMethod.GET)
     public Account findAccountIdByUserId(@PathVariable int id) {
+
+        System.out.println("endpoint: " + id);
+
         Account accountId = accountDao.findUserById(id);
         return accountId;
     }

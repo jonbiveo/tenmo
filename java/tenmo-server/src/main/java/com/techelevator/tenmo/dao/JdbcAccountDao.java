@@ -78,11 +78,13 @@ public class JdbcAccountDao implements AccountDao {
 
     @Override
     public Account findUserById(int userId) {
-        String sql = "SELECT * FROM accounts WHERE user_id = ?;";
+        String sql = "SELECT * FROM accounts WHERE user_id = ?";
         Account account = null;
         try {
             SqlRowSet result = jdbcTemplate.queryForRowSet(sql, userId);
-            account = mapToRowAccount(result);
+            if (result.next()) {
+                account = mapToRowAccount(result);
+            }
         } catch (DataAccessException e) {
             System.out.println("Error accessing data.");
         }
@@ -102,7 +104,8 @@ public class JdbcAccountDao implements AccountDao {
 
     private Account mapToRowAccount(SqlRowSet result) {
         Account account = new Account();
-        account.setBalance(result.getBigDecimal("balance"));
+        double balanceDbl = result.getDouble("balance");
+        account.setBalance(new BigDecimal(balanceDbl));
         account.setAccountId(result.getInt("account_id"));
         account.setUserId(result.getInt("user_id"));
         return account;
